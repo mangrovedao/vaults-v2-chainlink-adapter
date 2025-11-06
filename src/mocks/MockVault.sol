@@ -12,6 +12,7 @@ contract MockVault is IMangroveVaultV2 {
   address internal _base;
   address internal _quote;
   uint8 internal _decimals;
+  uint256 internal _totalSupply;
 
   constructor() {
     _base = address(new MockToken(18));
@@ -48,5 +49,13 @@ contract MockVault is IMangroveVaultV2 {
 
   function decimals() external view returns (uint8) {
     return _decimals;
+  }
+
+  function totalSupply() external view returns (uint256) {
+    return _totalSupply;
+  }
+
+  function setTotalSupply(uint256 totalSupply_) external {
+    _totalSupply = totalSupply_;
   }
 }
