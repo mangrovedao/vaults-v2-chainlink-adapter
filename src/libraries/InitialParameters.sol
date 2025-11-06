@@ -25,7 +25,7 @@ library InitialParameters {
    * @return quoteDivider The divider to normalize quote token to its decimals
    * @return sharesMultiplier The multiplier for normalizing vault shares to its decimals
    *
-   * @dev 
+   * @dev
    *  - `decimals` is set to the max of base/quote feed decimals to preserve precision.
    *  - Multiplier = 10 ** (decimals - feedDecimals) for each feed.
    *  - Dividers for assets/shares as powers of 10 according to token decimals.

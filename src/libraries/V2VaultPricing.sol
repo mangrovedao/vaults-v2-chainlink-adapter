@@ -74,9 +74,8 @@ library V2VaultPricing {
 
       // Safe cast to uint256 is guaranteed: price feeds should only return strictly-positive values
       // forge-lint: disable-next-item(unsafe-typecast)
-      _value =
-        (baseBalance.fullMulDiv(uint256(baseAnswer) * baseMultiplier, baseDivider))
-      + (quoteBalance.fullMulDiv(uint256(quoteAnswer) * quoteMultiplier, quoteDivider));
+      _value = (baseBalance.fullMulDiv(uint256(baseAnswer) * baseMultiplier, baseDivider))
+        + (quoteBalance.fullMulDiv(uint256(quoteAnswer) * quoteMultiplier, quoteDivider));
     }
   }
 
