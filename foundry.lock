@@ -1,0 +1,29 @@
+{
+  "lib/forge-std": {
+    "tag": {
+      "name": "v1.11.0",
+      "rev": "8e40513d678f392f398620b3ef2b418648b33e89"
+    }
+  },
+  "lib/mangrove-core": {
+    "tag": {
+      "name": "v2.1.1",
+      "rev": "7bd43dcf0c9541ec53fd1b43cae9dcc2d59ff808"
+    }
+  },
+  "lib/mangrove-strats": {
+    "tag": {
+      "name": "v2.0.1",
+      "rev": "1f79b2df3588b98a925be01746b678b18ec388a1"
+    }
+  },
+  "lib/solady": {
+    "tag": {
+      "name": "v0.1.26",
+      "rev": "acd959aa4bd04720d640bf4e6a5c71037510cc4b"
+    }
+  },
+  "lib/vaults-v2": {
+    "rev": "a777e0212ac75ad024140f8c353a52af7e90de80"
+  }
+}

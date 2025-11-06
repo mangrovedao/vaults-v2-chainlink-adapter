@@ -1,0 +1,93 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+
+import {LibString} from "lib/solady/src/utils/LibString.sol";
+
+/**
+ * @title V2VaultReader
+ * @dev Utility library for reading key data from a V2-style vault contract
+ *
+ * Provides efficient low-level accessors to extract normalized balances, metadata, and asset addresses from vaults
+ * These are intended for use in pricing, analytics, and UI query helpers without having to rely on vault interface inheritance
+ *
+ * Methods:
+ *  - totalBalances: Reads the vault's current balances for both base and quote assets.
+ *  - description: Extracts the user-facing name/description of the vault, prepending a label.
+ *  - market: Retrieves the addresses of base and quote assets of the vault.
+ */
+library V2VaultReader {
+  using LibString for string;
+
+  /**
+   * @notice Reads the current vault balances for the base and quote assets.
+   * @param vault Address of the vault contract.
+   * @return baseBalance The vault's current balance of the base asset.
+   * @return quoteBalance The vault's current balance of the quote asset.
+   *
+   * @dev Assumes the vault implements totalBalances() -> (uint256 baseBalance, uint256 quoteBalance).
+   *      Uses direct call (no try/catch), and reverts on failure.
+   */
+  function totalBalances(address vault) internal view returns (uint256 baseBalance, uint256 quoteBalance) {
+    /// @solidity memory-safe-assembly
+    assembly {
+      mstore(0x00, 0xa69a2ad1) // totalBalances()
+      if iszero(staticcall(gas(), vault, 0x1c, 0x04, 0x00, 0x40)) {
+        returndatacopy(0x00, 0x00, returndatasize())
+        revert(0x00, returndatasize())
+      }
+      if gt(returndatasize(), 0x3f) {
+        baseBalance := mload(0x00)
+        quoteBalance := mload(0x20)
+      }
+    }
+  }
+
+  /**
+   * @notice Gets a descriptive string for the vault, prefixed for display.
+   * @param vault The vault address.
+   * @return desc A string of the form "Feed: <vault name>".
+   *
+   * @dev Calls name() on the vault to extract the contract's descriptive name.
+   *      Returns it with "Feed: " prepended for display or feed labeling.
+   *      May revert if vault does not implement the expected name() function.
+   */
+  function description(address vault) internal view returns (string memory desc) {
+    /// @solidity memory-safe-assembly
+    assembly {
+      mstore(0x00, 0x06fdde03) // name()
+      if iszero(staticcall(gas(), vault, 0x1c, 0x04, 0x00, 0x00)) {
+        returndatacopy(0x00, 0x00, returndatasize())
+        revert(0x00, returndatasize())
+      }
+      desc := mload(0x40)
+      returndatacopy(desc, 0x00, returndatasize())
+      mstore(0x40, add(desc, returndatasize()))
+      desc := add(mload(desc), desc)
+    }
+    desc = string("Feed: ").concat(desc);
+  }
+
+  /**
+   * @notice Gets the vault's base and quote asset addresses.
+   * @param vault Address of the vault contract.
+   * @return base The address of the base asset/token.
+   * @return quote The address of the quote asset/token.
+   *
+   * @dev Calls market() on the vault, which must return (address base, address quote).
+   *      Useful for retrieving asset addresses when composing on top of vaults.
+   */
+  function market(address vault) internal view returns (address base, address quote) {
+    /// @solidity memory-safe-assembly
+    assembly {
+      mstore(0x00, 0x80f55605) // market()
+      if iszero(staticcall(gas(), vault, 0x1c, 0x04, 0x00, 0x40)) {
+        returndatacopy(0x00, 0x00, returndatasize())
+        revert(0x00, returndatasize())
+      }
+      if gt(returndatasize(), 0x3f) {
+        base := mload(0x00)
+        quote := mload(0x20)
+      }
+    }
+  }
+}
