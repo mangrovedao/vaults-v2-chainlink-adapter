@@ -2,6 +2,7 @@
 pragma solidity ^0.8.0;
 
 import {LibString} from "lib/solady/src/utils/LibString.sol";
+import {IMangroveVaultV2} from "../interfaces/IMangroveVaultV2.sol";
 
 /**
  * @title V2VaultReader
@@ -28,18 +29,7 @@ library V2VaultReader {
    *      Uses direct call (no try/catch), and reverts on failure.
    */
   function totalBalances(address vault) internal view returns (uint256 baseBalance, uint256 quoteBalance) {
-    /// @solidity memory-safe-assembly
-    assembly {
-      mstore(0x00, 0xa69a2ad1) // totalBalances()
-      if iszero(staticcall(gas(), vault, 0x1c, 0x04, 0x00, 0x40)) {
-        returndatacopy(0x00, 0x00, returndatasize())
-        revert(0x00, returndatasize())
-      }
-      if gt(returndatasize(), 0x3f) {
-        baseBalance := mload(0x00)
-        quoteBalance := mload(0x20)
-      }
-    }
+    (baseBalance, quoteBalance) = IMangroveVaultV2(vault).totalBalances();
   }
 
   /**
@@ -52,21 +42,7 @@ library V2VaultReader {
    *      May revert if vault does not implement the expected name() function.
    */
   function description(address vault) internal view returns (string memory desc) {
-    /// @solidity memory-safe-assembly
-    assembly {
-      mstore(0x00, 0x06fdde03) // name()
-      if iszero(staticcall(gas(), vault, 0x1c, 0x04, 0x00, 0x00)) {
-        returndatacopy(0x00, 0x00, returndatasize())
-        revert(0x00, returndatasize())
-      }
-      if gt(returndatasize(), 0x1f) {
-        desc := mload(0x40)
-        returndatacopy(desc, 0x00, returndatasize())
-        mstore(0x40, add(desc, returndatasize()))
-        desc := add(mload(desc), desc)
-      }
-    }
-    desc = string("Feed: ").concat(desc);
+    desc = string("Feed: ").concat(IMangroveVaultV2(vault).name());
   }
 
   /**
@@ -79,17 +55,6 @@ library V2VaultReader {
    *      Useful for retrieving asset addresses when composing on top of vaults.
    */
   function market(address vault) internal view returns (address base, address quote) {
-    /// @solidity memory-safe-assembly
-    assembly {
-      mstore(0x00, 0x80f55605) // market()
-      if iszero(staticcall(gas(), vault, 0x1c, 0x04, 0x00, 0x40)) {
-        returndatacopy(0x00, 0x00, returndatasize())
-        revert(0x00, returndatasize())
-      }
-      if gt(returndatasize(), 0x3f) {
-        base := mload(0x00)
-        quote := mload(0x20)
-      }
-    }
+    (base, quote,) = IMangroveVaultV2(vault).market();
   }
 }

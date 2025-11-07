@@ -30,10 +30,9 @@ contract V2VaultReaderTest is Test {
     subject = new V2VaultReaderSubject();
   }
 
-  function test_totalBalancesReturns0WhenEmpty() public view {
-    (uint256 baseBalance, uint256 quoteBalance) = subject.totalBalances(address(0xdeadbeef));
-    assertEq(baseBalance, 0);
-    assertEq(quoteBalance, 0);
+  function test_totalBalancesReturns0WhenEmpty() public {
+    vm.expectRevert();
+    subject.totalBalances(address(0xdeadbeef));
   }
 
   function testFuzzTotalBalances(uint256 baseBalance, uint256 quoteBalance) public {
@@ -55,10 +54,9 @@ contract V2VaultReaderTest is Test {
     assertEq(quote, quote_);
   }
 
-  function test_marketsReturns0WhenEmpty() public view {
+  function test_marketsReturns0WhenEmpty() public {
+    vm.expectRevert();
     (address base, address quote) = subject.market(address(0xdeadbeef));
-    assertEq(base, address(0));
-    assertEq(quote, address(0));
   }
 
   function test_bubblesUpRevert() public {
@@ -77,15 +75,11 @@ contract V2VaultReaderTest is Test {
     vault.setName("name");
     vault.setTotalBalances(100, 200);
 
-    (uint256 baseBalance, uint256 quoteBalance) = subject.totalBalances(address(vault));
-    assertEq(baseBalance, 0);
-    assertEq(quoteBalance, 0);
-
-    string memory description = subject.description(address(vault));
-    assertEq(description, "Feed: ");
-
-    (address base, address quote) = subject.market(address(vault));
-    assertEq(base, address(0));
-    assertEq(quote, address(0));
+    vm.expectRevert();
+    subject.totalBalances(address(vault));
+    vm.expectRevert();
+    subject.description(address(vault));
+    vm.expectRevert();
+    subject.market(address(vault));
   }
 }
