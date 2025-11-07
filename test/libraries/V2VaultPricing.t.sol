@@ -58,7 +58,7 @@ contract V2VaultPricingTest is Test {
   }
 
   function fixtureValues() public pure returns (ValueParams[] memory values) {
-    values = new ValueParams[](1);
+    values = new ValueParams[](2);
     values[0] = ValueParams({
       baseBalance: 1 ether,
       quoteBalance: 1 ether,
@@ -72,6 +72,21 @@ contract V2VaultPricingTest is Test {
       totalSupply: 2 ether,
       expectedValue: 2e6,
       expectedPrice: 1e6
+    });
+
+    values[1] = ValueParams({
+      baseBalance: 3.5 ether,
+      quoteBalance: 2600e6,
+      baseDecimals: 18,
+      quoteDecimals: 6,
+      baseAnswer: 3500e8,
+      quoteAnswer: 1e6,
+      baseFeedDecimals: 8,
+      quoteFeedDecimals: 6,
+      vaultDecimals: 18,
+      totalSupply: 5 ether,
+      expectedValue: 14850e8,
+      expectedPrice: 2970e8
     });
   }
 
@@ -111,5 +126,55 @@ contract V2VaultPricingTest is Test {
       sharesMultiplier
     );
     assertEq(uint256(price), values.expectedPrice);
+  }
+
+  function testFuzz_pricing(ValueParams memory values) public {
+    values.baseDecimals = uint8(bound(values.baseDecimals, 0, 21));
+    values.quoteDecimals = uint8(bound(values.quoteDecimals, 0, 21));
+    values.vaultDecimals = uint8(bound(values.vaultDecimals, 0, 21));
+
+    values.baseBalance = uint256(bound(values.baseBalance, 0, 100e9 * 10 ** values.baseDecimals));
+    values.quoteBalance = uint256(bound(values.quoteBalance, 0, 100e9 * 10 ** values.quoteDecimals));
+    values.totalSupply = uint256(bound(values.totalSupply, 0, 100e9 * 10 ** values.vaultDecimals));
+
+    values.baseFeedDecimals = uint8(bound(values.baseFeedDecimals, 0, 21));
+    values.quoteFeedDecimals = uint8(bound(values.quoteFeedDecimals, 0, 21));
+
+    values.baseAnswer = int256(bound(uint256(values.baseAnswer), 1, 1e6 * 10 ** values.baseFeedDecimals));
+    values.quoteAnswer = int256(bound(uint256(values.quoteAnswer), 1, 1e6 * 10 ** values.quoteFeedDecimals));
+
+    _setValues(values);
+
+    (
+      ,
+      uint256 baseMultiplier,
+      uint256 quoteMultiplier,
+      uint256 baseDivider,
+      uint256 quoteDivider,
+      uint256 sharesMultiplier
+    ) = InitialParameters.initialParameters(address(vault), address(baseFeed), address(quoteFeed));
+
+    uint256 value = V2VaultPricing.value(
+      address(vault), values.baseAnswer, values.quoteAnswer, baseMultiplier, quoteMultiplier, baseDivider, quoteDivider
+    );
+
+    (int256 price,) = V2VaultPricing.price(
+      address(vault),
+      address(baseFeed),
+      address(quoteFeed),
+      baseMultiplier,
+      quoteMultiplier,
+      baseDivider,
+      quoteDivider,
+      sharesMultiplier
+    );
+
+    uint256 baseValue = values.baseBalance * uint256(values.baseAnswer) * baseMultiplier / baseDivider;
+    uint256 quoteValue = values.quoteBalance * uint256(values.quoteAnswer) * quoteMultiplier / quoteDivider;
+    uint256 expectedValue = baseValue + quoteValue;
+    uint256 expectedPrice = values.totalSupply == 0 ? 1 : expectedValue * sharesMultiplier / values.totalSupply;
+
+    assertEq(value, expectedValue);
+    assertEq(uint256(price), expectedPrice);
   }
 }
