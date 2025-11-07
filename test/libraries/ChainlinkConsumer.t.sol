@@ -47,4 +47,19 @@ contract ChainlinkConsumerTest is Test {
       assertEq(updatedAt_, updatedAt);
     }
   }
+
+  function test_revertsOnNegativeAnswer() public {
+    mock.setData(-1, 0, 18);
+    vm.expectRevert(ChainlinkConsumer.Overflow.selector);
+    subject.latestRoundData(address(mock));
+  }
+
+  function test_bubblesUpRevert() public {
+    mock.setShouldRevert(true);
+    vm.expectRevert(MockFeed.FeedCallRevert.selector);
+    subject.latestRoundData(address(mock));
+
+    vm.expectRevert(MockFeed.FeedCallRevert.selector);
+    subject.decimals(address(mock));
+  }
 }

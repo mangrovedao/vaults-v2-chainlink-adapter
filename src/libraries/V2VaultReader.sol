@@ -59,10 +59,12 @@ library V2VaultReader {
         returndatacopy(0x00, 0x00, returndatasize())
         revert(0x00, returndatasize())
       }
-      desc := mload(0x40)
-      returndatacopy(desc, 0x00, returndatasize())
-      mstore(0x40, add(desc, returndatasize()))
-      desc := add(mload(desc), desc)
+      if gt(returndatasize(), 0x1f) {
+        desc := mload(0x40)
+        returndatacopy(desc, 0x00, returndatasize())
+        mstore(0x40, add(desc, returndatasize()))
+        desc := add(mload(desc), desc)
+      }
     }
     desc = string("Feed: ").concat(desc);
   }

@@ -172,7 +172,9 @@ contract V2VaultPricingTest is Test {
     uint256 baseValue = values.baseBalance * uint256(values.baseAnswer) * baseMultiplier / baseDivider;
     uint256 quoteValue = values.quoteBalance * uint256(values.quoteAnswer) * quoteMultiplier / quoteDivider;
     values.expectedValue = baseValue + quoteValue;
-    values.expectedPrice = values.totalSupply == 0 ? 1 : values.expectedValue * sharesMultiplier / values.totalSupply;
+    values.expectedPrice = values.totalSupply == 0
+      ? uint256(values.quoteAnswer) * quoteMultiplier
+      : values.expectedValue * sharesMultiplier / values.totalSupply;
 
     assertEq(value, values.expectedValue);
     assertEq(uint256(price), values.expectedPrice);

@@ -48,12 +48,12 @@ contract VaultsV2Feed is AggregatorV2V3Interface {
   uint256 internal immutable SHARES_MULTIPLIER;
 
   /// @notice Chainlink base asset feed address (e.g., asset/USD)
-  address immutable BASE_FEED_ADDRESS;
+  address public immutable BASE_FEED_ADDRESS;
   /// @notice Chainlink quote asset feed address (e.g., asset/USD)
-  address immutable QUOTE_FEED_ADDRESS;
+  address public immutable QUOTE_FEED_ADDRESS;
 
   /// @notice Address of the target Vault V2 contract
-  address immutable VAULT_V2_ADDRESS;
+  address public immutable VAULT_V2_ADDRESS;
 
   /**
    * @notice Initializes the VaultsV2Feed contract, precomputing all normalization coefficients.

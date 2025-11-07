@@ -108,13 +108,14 @@ library V2VaultPricing {
   ) internal view returns (int256 _price, uint256 updatedAt) {
     unchecked {
       uint256 totalSupply = vault.totalSupply();
-      if (totalSupply == 0) {
-        return (1, 0);
-      }
 
       int256 baseAnswer;
       int256 quoteAnswer;
       (baseAnswer, quoteAnswer, updatedAt) = answers(baseFeed, quoteFeed);
+
+      if (totalSupply == 0) {
+        return (quoteAnswer * int256(quoteMultiplier), 0);
+      }
 
       uint256 _value = value(vault, baseAnswer, quoteAnswer, baseMultiplier, quoteMultiplier, baseDivider, quoteDivider);
 
