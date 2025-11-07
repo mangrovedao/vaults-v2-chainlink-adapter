@@ -55,6 +55,6 @@ library V2VaultReader {
    *      Useful for retrieving asset addresses when composing on top of vaults.
    */
   function market(address vault) internal view returns (address base, address quote) {
-    (base, quote, ) = IMangroveVaultV2(vault).market();
+    (base, quote,) = IMangroveVaultV2(vault).market();
   }
 }
