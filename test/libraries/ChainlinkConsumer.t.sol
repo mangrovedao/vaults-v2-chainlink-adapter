@@ -26,7 +26,7 @@ contract ChainlinkConsumerTest is Test {
     subject = new ChainlinkConsumerSubject();
   }
 
-  function testFuzzDecimals(uint256 decimals) public {
+  function testFuzzDecimals(uint8 decimals) public {
     mock.setData(0, 0, decimals);
     if (decimals > 30) {
       vm.expectRevert(ChainlinkConsumer.Overflow.selector);
