@@ -1,15 +1,54 @@
 ## Vaults v2 feed
 
-Let the underlying tokens A and B with decimals `a` and `b` respectively.
+The goal of this project is to create a price feed for a Mangrove V2 vault. There needs to be 2 chainlink compatible sources, 1 for the base asset and 1 for the quote asset. The price feed will be a Chainlink AggregatorV2V3-style price-feed adapter for a V2-style vault.
 
-Let each token have a feed `F_A` and `F_B` with decimals `f_A` and `f_B` respectively that prices them agains USD.
+### Math
 
-Finally let the vault have `S` shares with `s` decimals.
+The basic math behind the vault is we first compute the value held in the vault and divide by the number of shares.
 
-We first need to compute our decimals for pricing calculations. For that we will take the maximum of the two feed decimals: `f = max(f_A, f_B)`.
+The complexity lies in the decimal shifting that will be done.
 
-Then we will compute the scaling factors for the two feeds: `scale_A = 10^(a + f - f_A)` and `scale_B = 10^(b + f - f_B)`.
+### The final decimals
 
-Then we need to compute the balances of the two tokens in the vault scaled in USD with `f` decimals: `USDbalance_A = balance_A * scale_A * 10^f / F_A` and `USDbalance_B = balance_B * scale_B * 10^f / F_B`.
+The vault price decimals will be the maximum between the base feed decimals and the quote feed decimals.
 
-Finally we can compute the price of a share of the vault: `price = (USDbalance_A + USDbalance_B) * 10^s / S`.
+Let `D_vaultFeed = max(D_baseFeed, D_quoteFeed)`.
+
+### The formulas
+
+the actual math formula ignoring fixed point arithemtic is:
+
+```
+value = (B_base * P_base) + (B_quote * P_quote)
+price = value / B_vault
+```
+
+With `B_base` and `B_quote` being the balances of the base and quote assets in the vault and `P_base` and `P_quote` being the prices of the base and quote assets in the feed and `B_vault` being the number of shares in the vault.
+
+But we need to scale it so the final value answer is expressed in `D_vaultFeed` decimals.
+
+```
+value = (B_base * P_base * 10^(D_vaultFeed - D_baseFeed)) / 10^(D_base) + (B_quote * P_quote * 10^(D_vaultFeed - D_quoteFeed)) / 10^(D_quote)
+price = value * 10^(D_vault) / B_vault
+```
+
+### Edge cases
+
+When there is no shares in the vault, the price is defined as the price of the quote asset, this is indeed the price of a share on initial minting.
+
+When one of the feeds or the vault fails to answer, the data will revert.
+
+### Additional notes
+
+- The vault only has one round that is 1.
+- The latest updatedAt is the minimum of the base and quote feed updatedAt.
+
+## Deployment
+
+```sh
+git clone git@github.com:mangrovedao/vaults-v2-chainlink-adapter.git
+cd vaults-v2-chainlink-adapter
+forge install
+forge build
+forge create src/VaultsV2Feed.sol:VaultsV2Feed $VAULT_ADDRESS $BASE_FEED $QUOTE_FEED --rpc-url $RPC_URL --private-key $PRIVATE_KEY
+```
