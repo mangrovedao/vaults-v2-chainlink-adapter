@@ -8,9 +8,6 @@ import {IMangroveVaultV2} from "../interfaces/IMangroveVaultV2.sol";
  * @title V2VaultReader
  * @dev Utility library for reading key data from a V2-style vault contract
  *
- * Provides efficient low-level accessors to extract normalized balances, metadata, and asset addresses from vaults
- * These are intended for use in pricing, analytics, and UI query helpers without having to rely on vault interface inheritance
- *
  * Methods:
  *  - totalBalances: Reads the vault's current balances for both base and quote assets.
  *  - description: Extracts the user-facing name/description of the vault, prepending a label.
