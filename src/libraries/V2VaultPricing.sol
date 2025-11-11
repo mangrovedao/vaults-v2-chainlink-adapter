@@ -116,7 +116,7 @@ library V2VaultPricing {
       if (totalSupply == 0) {
         // casting to 'int256' is safe because quoteMultiplier is a small value
         // forge-lint: disable-next-line(unsafe-typecast)
-        return (quoteAnswer * int256(quoteMultiplier), 0);
+        return (quoteAnswer * int256(quoteMultiplier), updatedAt);
       }
 
       uint256 _value = value(vault, baseAnswer, quoteAnswer, baseMultiplier, quoteMultiplier, baseDivider, quoteDivider);
